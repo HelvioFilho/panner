@@ -14,8 +14,9 @@ import {
 
 import { Button } from "@/components/Button";
 import { Modal } from "@/components/Modal";
-import { Calendar, DateData } from "react-native-calendars";
+import { DateData } from "react-native-calendars";
 import { calendarUtils, DatesSelected } from "@/utils/calendarUtils";
+import { Calendar } from "@/components/Calendar";
 
 enum StepForm {
   TRIP_DETAILS = 1,
