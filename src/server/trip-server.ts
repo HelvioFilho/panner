@@ -8,6 +8,10 @@ export type TripDetails = {
   is_confirmed: boolean;
 };
 
+type TripCreate = Omit<TripDetails, "id" | "is_confirmed"> & {
+  emails_to_invite: string[];
+};
+
 async function getById(id: string) {
   try {
     const { data } = await api.get<{ trip: TripDetails }>(`/trips/${id}`);
@@ -17,4 +21,26 @@ async function getById(id: string) {
   }
 }
 
-export const tripServer = { getById };
+async function create({
+  destination,
+  starts_at,
+  ends_at,
+  emails_to_invite,
+}: TripCreate) {
+  try {
+    const { data } = await api.post<{ tripId: string }>("/trips", {
+      destination,
+      starts_at,
+      ends_at,
+      emails_to_invite,
+      owner_name: "Hélvio Filho",
+      owner_email: "helviosvf@gmail.com",
+    });
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const tripServer = { getById, create };
