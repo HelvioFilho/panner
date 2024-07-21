@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { Input } from "@/components/Input";
 import { Alert, Image, Keyboard, Text, View } from "react-native";
@@ -16,6 +16,7 @@ import {
 
 import { Modal } from "@/components/Modal";
 import { Button } from "@/components/Button";
+import { Loading } from "@/components/Loading";
 import { Calendar } from "@/components/Calendar";
 import { GuestEmail } from "@/components/GuestEmail";
 
@@ -38,6 +39,7 @@ enum MODAL {
 
 export default function Index() {
   const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+  const [isGettingTrip, setIsGettingTrip] = useState(true);
 
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS);
   const [selectedDates, setSelectedDates] = useState({} as DatesSelected);
@@ -146,6 +148,33 @@ export default function Index() {
       console.log(error);
       setIsCreatingTrip(false);
     }
+  }
+
+  async function getTrip() {
+    try {
+      const tripID = await tripStorage.get();
+
+      if (!tripID) {
+        return setIsGettingTrip(false);
+      }
+
+      const trip = await tripServer.getById(tripID);
+
+      if (trip) {
+        return router.navigate("/trip/" + trip.id);
+      }
+    } catch (error) {
+      setIsGettingTrip(false);
+      console.log(error);
+    }
+  }
+
+  useEffect(() => {
+    getTrip();
+  }, []);
+
+  if (isGettingTrip) {
+    return <Loading />;
   }
 
   return (
