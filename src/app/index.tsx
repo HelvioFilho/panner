@@ -1,7 +1,7 @@
 import { Input } from "@/components/Input";
 import { colors } from "@/styles/colors";
 import { useState } from "react";
-import { Image, Keyboard, Text, View } from "react-native";
+import { Alert, Image, Keyboard, Text, View } from "react-native";
 import dayjs from "dayjs";
 
 import {
@@ -32,10 +32,26 @@ enum MODAL {
 export default function Index() {
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS);
   const [selectedDates, setSelectedDates] = useState({} as DatesSelected);
+  const [destination, setDestination] = useState("");
 
   const [showModal, setShowModal] = useState(MODAL.NONE);
 
   function handleNextStepForm() {
+    if (
+      destination.trim().length === 0 ||
+      !selectedDates.startsAt ||
+      !selectedDates.endsAt
+    ) {
+      return Alert.alert(
+        "Aviso",
+        "Preencha todos as informações da viagem para seguir"
+      );
+    }
+
+    if (destination.length < 4) {
+      return Alert.alert("Aviso", "O destino deve ter pelo menos 4 caracteres");
+    }
+
     if (stepForm === StepForm.TRIP_DETAILS) {
       return setStepForm(StepForm.ADD_EMAIL);
     }
@@ -71,6 +87,8 @@ export default function Index() {
           <Input.Field
             placeholder="Para onde?"
             editable={stepForm === StepForm.TRIP_DETAILS}
+            onChangeText={setDestination}
+            value={destination}
           />
         </Input>
         <Input>
