@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import { useState } from "react";
+import { router } from "expo-router";
 import { Input } from "@/components/Input";
 import { Alert, Image, Keyboard, Text, View } from "react-native";
 import { DateData } from "react-native-calendars";
@@ -19,6 +20,8 @@ import { Calendar } from "@/components/Calendar";
 import { GuestEmail } from "@/components/GuestEmail";
 
 import { colors } from "@/styles/colors";
+import { tripStorage } from "@/storage/trip";
+import { tripServer } from "@/server/trip-server";
 import { validateInput } from "@/utils/validateInput";
 import { calendarUtils, DatesSelected } from "@/utils/calendarUtils";
 
@@ -34,6 +37,8 @@ enum MODAL {
 }
 
 export default function Index() {
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false);
+
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS);
   const [selectedDates, setSelectedDates] = useState({} as DatesSelected);
   const [destination, setDestination] = useState("");
@@ -61,6 +66,17 @@ export default function Index() {
     if (stepForm === StepForm.TRIP_DETAILS) {
       return setStepForm(StepForm.ADD_EMAIL);
     }
+
+    Alert.alert("Aviso", "Confirmar viagem?", [
+      {
+        text: "Não",
+        style: "cancel",
+      },
+      {
+        text: "Sim",
+        onPress: createTrip,
+      },
+    ]);
   }
 
   function handleSelectDate(selectedDay: DateData) {
@@ -94,6 +110,42 @@ export default function Index() {
 
     setEmailsToInvite((prevState) => [...prevState, emailToInvite]);
     setEmailToInvite("");
+  }
+
+  async function saveTrip(tripId: string) {
+    try {
+      await tripStorage.save(tripId);
+      router.navigate("/trip/" + tripId);
+    } catch (error) {
+      Alert.alert(
+        "Aviso",
+        "Não foi possível salvar o id da viagem no dispositivo."
+      );
+      console.log(error);
+    }
+  }
+
+  async function createTrip() {
+    try {
+      setIsCreatingTrip(true);
+
+      const newTrip = await tripServer.create({
+        destination,
+        starts_at: dayjs(selectedDates.startsAt?.dateString).toString(),
+        ends_at: dayjs(selectedDates.endsAt?.dateString).toString(),
+        emails_to_invite: emailsToInvite,
+      });
+
+      Alert.alert("Aviso", "Viagem criada com sucesso!", [
+        {
+          text: "OK. Continuar.",
+          onPress: () => saveTrip(newTrip.tripId),
+        },
+      ]);
+    } catch (error) {
+      console.log(error);
+      setIsCreatingTrip(false);
+    }
   }
 
   return (
@@ -168,7 +220,7 @@ export default function Index() {
           </>
         )}
 
-        <Button onPress={handleNextStepForm}>
+        <Button onPress={handleNextStepForm} isLoading={isCreatingTrip}>
           <Button.Title>
             {stepForm === StepForm.TRIP_DETAILS
               ? "Continuar"
