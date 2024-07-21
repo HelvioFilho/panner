@@ -1,8 +1,8 @@
-import { Input } from "@/components/Input";
-import { colors } from "@/styles/colors";
-import { useState } from "react";
-import { Alert, Image, Keyboard, Text, View } from "react-native";
 import dayjs from "dayjs";
+import { useState } from "react";
+import { Input } from "@/components/Input";
+import { Alert, Image, Keyboard, Text, View } from "react-native";
+import { DateData } from "react-native-calendars";
 
 import {
   MapPin,
@@ -10,13 +10,17 @@ import {
   Settings2,
   UserRoundPlus,
   ArrowRight,
+  AtSign,
 } from "lucide-react-native";
 
-import { Button } from "@/components/Button";
 import { Modal } from "@/components/Modal";
-import { DateData } from "react-native-calendars";
-import { calendarUtils, DatesSelected } from "@/utils/calendarUtils";
+import { Button } from "@/components/Button";
 import { Calendar } from "@/components/Calendar";
+import { GuestEmail } from "@/components/GuestEmail";
+
+import { colors } from "@/styles/colors";
+import { validateInput } from "@/utils/validateInput";
+import { calendarUtils, DatesSelected } from "@/utils/calendarUtils";
 
 enum StepForm {
   TRIP_DETAILS = 1,
@@ -33,6 +37,8 @@ export default function Index() {
   const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS);
   const [selectedDates, setSelectedDates] = useState({} as DatesSelected);
   const [destination, setDestination] = useState("");
+  const [emailToInvite, setEmailToInvite] = useState("");
+  const [emailsToInvite, setEmailsToInvite] = useState<string[]>([]);
 
   const [showModal, setShowModal] = useState(MODAL.NONE);
 
@@ -65,6 +71,29 @@ export default function Index() {
     });
 
     setSelectedDates(dates);
+  }
+
+  function handleRemoveEmail(emailToRemove: string) {
+    setEmailsToInvite((prevState) =>
+      prevState.filter((email) => email !== emailToRemove)
+    );
+  }
+
+  function handleAddEmail() {
+    if (!validateInput.email(emailToInvite)) {
+      return Alert.alert("Convidado", "E-mail inválido!");
+    }
+
+    const emailAlreadyExists = emailsToInvite.find(
+      (email) => email === emailToInvite
+    );
+
+    if (emailAlreadyExists) {
+      return Alert.alert("Convidado", "E-mail já foi adicionado!");
+    }
+
+    setEmailsToInvite((prevState) => [...prevState, emailToInvite]);
+    setEmailToInvite("");
   }
 
   return (
@@ -121,6 +150,19 @@ export default function Index() {
                 placeholder="Quem estará na viagem?"
                 autoCorrect={false}
                 showSoftInputOnFocus={false}
+                value={
+                  emailsToInvite.length > 0
+                    ? `${emailsToInvite.length} ${
+                        emailsToInvite.length > 1
+                          ? "pessoas convidadas"
+                          : "pessoa convidada"
+                      }`
+                    : ""
+                }
+                onPress={() => {
+                  Keyboard.dismiss();
+                  setShowModal(MODAL.GUESTS);
+                }}
               />
             </Input>
           </>
@@ -158,6 +200,45 @@ export default function Index() {
 
           <Button onPress={() => setShowModal(MODAL.NONE)}>
             <Button.Title>Confirmar</Button.Title>
+          </Button>
+        </View>
+      </Modal>
+      <Modal
+        title="Selecionar convidados"
+        subtitle="Os convidados irão receber e-mails para confirmar a participação na viagem."
+        visible={showModal === MODAL.GUESTS}
+        onClose={() => setShowModal(MODAL.NONE)}
+      >
+        <View className="my-2 flex-wrap gap-2 border-b border-zinc-800 py-5 items-start">
+          {emailsToInvite.length > 0 ? (
+            emailsToInvite.map((email) => (
+              <GuestEmail
+                key={email}
+                email={email}
+                onRemove={() => handleRemoveEmail(email)}
+              />
+            ))
+          ) : (
+            <Text className="text-zinc-600 text-base font-regular">
+              Nenhum e-mail adicionado.
+            </Text>
+          )}
+        </View>
+
+        <View className="gap-4 mt-4">
+          <Input variant="secondary">
+            <AtSign color={colors.zinc[400]} size={20} />
+            <Input.Field
+              placeholder="Digite o e-mail do convidado"
+              keyboardType="email-address"
+              onChangeText={(text) => setEmailToInvite(text.toLowerCase())}
+              value={emailToInvite}
+              returnKeyType="send"
+              onSubmitEditing={handleAddEmail}
+            />
+          </Input>
+          <Button onPress={handleAddEmail}>
+            <Button.Title>Convidar</Button.Title>
           </Button>
         </View>
       </Modal>
