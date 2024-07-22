@@ -1,5 +1,9 @@
-import "dayjs/locale/pt-br"
-import dayjs from "dayjs"
+import dayjs from "dayjs";
+import "dayjs/locale/pt-br";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
-// Para traduzir os nomes de dias e mês para pt-br.
-dayjs.locale("pt-br")
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+dayjs.locale("pt-br");
