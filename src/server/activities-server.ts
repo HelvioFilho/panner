@@ -10,6 +10,13 @@ type ActivityCreate = Omit<Activity, "id"> & {
   tripId: string;
 };
 
+type ActivityResponse = {
+  activities: {
+    date: string;
+    activities: Activity[];
+  }[];
+};
+
 async function create({ tripId, occurs_at, title }: ActivityCreate) {
   try {
     const { data } = await api.post<{ activityId: string }>(
@@ -22,4 +29,15 @@ async function create({ tripId, occurs_at, title }: ActivityCreate) {
   }
 }
 
-export const activitiesServer = { create };
+async function getActivitiesByTripId(tripId: string) {
+  try {
+    const { data } = await api.get<ActivityResponse>(
+      `/trips/${tripId}/activities`
+    );
+    return data.activities;
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const activitiesServer = { create, getActivitiesByTripId };
