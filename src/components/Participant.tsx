@@ -1,35 +1,36 @@
-import { Text, View } from "react-native"
-import { CircleDashed, CircleCheck } from "lucide-react-native"
+import { Text, View } from "react-native";
+import { CircleDashed, CircleCheck } from "lucide-react-native";
 
-import { colors } from "@/styles/colors"
+import { colors } from "@/styles/colors";
 
 export type ParticipantProps = {
-  id: string
-  name?: string
-  email: string
-  is_confirmed: boolean
-}
+  id: string;
+  name?: string;
+  email: string;
+  is_confirmed: string;
+};
 
 type ParticipantDataProps = {
-  data: ParticipantProps
-}
+  data: ParticipantProps;
+};
 
 export function Participant({ data }: ParticipantDataProps) {
+  const confirmed = data.is_confirmed === "1" ? true : false;
   return (
     <View className="w-full flex-row items-center">
       <View className="flex-1">
         <Text className="text-zinc-100 text-base font-semibold">
-          {data.name ?? "Pendente"}
+          {data.name === "" ? "Pendente" : data.name}
         </Text>
 
         <Text className="text-zinc-400 text-sm">{data.email}</Text>
       </View>
 
-      {data.is_confirmed ? (
+      {confirmed ? (
         <CircleCheck color={colors.lime[300]} size={20} />
       ) : (
         <CircleDashed color={colors.zinc[400]} size={20} />
       )}
     </View>
-  )
+  );
 }
