@@ -190,7 +190,7 @@ export function Activities({ tripDetails }: ActivitiesProps) {
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <Activity data={item} />}
           renderSectionHeader={({ section }) => (
-            <View className="w-full">
+            <View className="w-full bg-zinc-950 px-2 py-2">
               <Text className="text-zinc-50 text-2xl font-semibold py-2">
                 Dia {section.title.dayNumber + " "}
                 <Text className="text-zinc-500 text-base font-regular capitalize">
