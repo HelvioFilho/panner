@@ -10,7 +10,7 @@ import {
 } from "lucide-react-native";
 import { colors } from "@/styles/colors";
 import { Activity, ActivityProps } from "@/components/Activity";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loading } from "@/components/Loading";
 import { Modal } from "@/components/Modal";
 import { Input } from "@/components/Input";
@@ -19,6 +19,17 @@ import { activitiesServer } from "@/server/activities-server";
 
 type ActivitiesProps = {
   tripDetails: TripData;
+};
+
+type Activity = {
+  id: string;
+  title: string;
+  occurs_at: string;
+};
+
+type DayActivity = {
+  date: string;
+  activities: Activity[] | { [key: string]: Activity };
 };
 
 enum MODAL {
@@ -62,11 +73,18 @@ export function Activities({ tripDetails }: ActivitiesProps) {
 
       setIsCreatingActivity(true);
 
-      const [hours, minutes] = activityHour.split(":").map(Number);
+      let [hours, minutes] = activityHour.split(":").map(Number);
+
+      if (isNaN(minutes)) {
+        minutes = 0;
+      }
+
+      const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
+      const formattedMinutes = minutes < 10 ? `0${minutes}` : `${minutes}`;
 
       const occursAt = dayjs(activityDate)
-        .set("hour", hours)
-        .set("minute", minutes)
+        .set("hour", Number(formattedHours))
+        .set("minute", Number(formattedMinutes))
         .tz("America/Sao_Paulo", true)
         .toString();
 
@@ -90,7 +108,38 @@ export function Activities({ tripDetails }: ActivitiesProps) {
     }
   }
 
-  async function getTripActivities() {}
+  async function getTripActivities() {
+    try {
+      const activitiesResponse: DayActivity[] =
+        await activitiesServer.getActivitiesByTripId(tripDetails.id);
+
+      const activitiesToSectionList = activitiesResponse.map((dayActivity) => ({
+        title: {
+          dayNumber: dayjs(dayActivity.date).date(),
+          dayName: dayjs(dayActivity.date).format("dddd"),
+        },
+        data: Array.isArray(dayActivity.activities)
+          ? dayActivity.activities.map((activity) => ({
+              id: activity.id,
+              title: activity.title,
+              hour: dayjs(activity.occurs_at).format("hh[:]mm[h]"),
+              isBefore: dayjs(activity.occurs_at).isBefore(dayjs()),
+            }))
+          : Object.values(dayActivity.activities).map((activity: Activity) => ({
+              id: activity.id,
+              title: activity.title,
+              hour: dayjs(activity.occurs_at).format("hh[:]mm[h]"),
+              isBefore: dayjs(activity.occurs_at).isBefore(dayjs()),
+            })),
+      }));
+
+      setTripActivities(activitiesToSectionList);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsLoadingActivities(false);
+    }
+  }
 
   function handleTimeChange(text: string) {
     let formattedText = text.replace(/[^0-9]/g, "");
@@ -110,6 +159,10 @@ export function Activities({ tripDetails }: ActivitiesProps) {
     }
     setActivityHour(formattedText);
   }
+
+  useEffect(() => {
+    getTripActivities();
+  }, []);
 
   return (
     <View className="flex-1">
