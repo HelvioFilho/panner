@@ -7,6 +7,12 @@ export type Participant = {
   is_confirmed: string;
 };
 
+type ParticipantConfirm = {
+  participantId: string;
+  name: string;
+  email: string;
+};
+
 async function getByTripId(tripId: string) {
   try {
     const { data } = await api.get<{ participants: Participant[] }>(
@@ -19,4 +25,16 @@ async function getByTripId(tripId: string) {
   }
 }
 
-export const participantsServer = { getByTripId };
+async function confirmTripByParticipantId({
+  participantId,
+  name,
+  email,
+}: ParticipantConfirm) {
+  try {
+    await api.patch(`/participants/${participantId}/confirm`, { name, email });
+  } catch (error) {
+    throw error;
+  }
+}
+
+export const participantsServer = { getByTripId, confirmTripByParticipantId };
