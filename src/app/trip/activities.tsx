@@ -1,20 +1,22 @@
 import dayjs from "dayjs";
+import { useEffect, useState } from "react";
 import { Alert, Keyboard, SectionList, Text, View } from "react-native";
-import { TripData } from "./[id]";
-import { Button } from "@/components/Button";
 import {
   PlusIcon,
   Tag,
   Calendar as IconCalendar,
   Clock,
 } from "lucide-react-native";
-import { colors } from "@/styles/colors";
-import { Activity, ActivityProps } from "@/components/Activity";
-import { useEffect, useState } from "react";
-import { Loading } from "@/components/Loading";
+
 import { Modal } from "@/components/Modal";
 import { Input } from "@/components/Input";
+import { Button } from "@/components/Button";
+import { Loading } from "@/components/Loading";
 import { Calendar } from "@/components/Calendar";
+import { Activity, ActivityProps } from "@/components/Activity";
+
+import { TripData } from "./[id]";
+import { colors } from "@/styles/colors";
 import { activitiesServer } from "@/server/activities-server";
 
 type ActivitiesProps = {
@@ -48,7 +50,6 @@ type TripActivities = {
 
 export function Activities({ tripDetails }: ActivitiesProps) {
   const [showModal, setShowModal] = useState(MODAL.NONE);
-
   const [isCreatingActivity, setIsCreatingActivity] = useState(false);
   const [isLoadingActivities, setIsLoadingActivities] = useState(false);
 
@@ -77,6 +78,11 @@ export function Activities({ tripDetails }: ActivitiesProps) {
 
       if (isNaN(minutes)) {
         minutes = 0;
+      }
+
+      if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+        setIsCreatingActivity(false);
+        return Alert.alert("Aviso", "Por favor, insira um horário válido.");
       }
 
       const formattedHours = hours < 10 ? `0${hours}` : `${hours}`;
@@ -122,13 +128,13 @@ export function Activities({ tripDetails }: ActivitiesProps) {
           ? dayActivity.activities.map((activity) => ({
               id: activity.id,
               title: activity.title,
-              hour: dayjs(activity.occurs_at).format("hh[:]mm[h]"),
+              hour: dayjs(activity.occurs_at).format("HH[:]mm[h]"),
               isBefore: dayjs(activity.occurs_at).isBefore(dayjs()),
             }))
           : Object.values(dayActivity.activities).map((activity: Activity) => ({
               id: activity.id,
               title: activity.title,
-              hour: dayjs(activity.occurs_at).format("hh[:]mm[h]"),
+              hour: dayjs(activity.occurs_at).format("HH[:]mm[h]"),
               isBefore: dayjs(activity.occurs_at).isBefore(dayjs()),
             })),
       }));
