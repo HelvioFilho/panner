@@ -1,12 +1,15 @@
-import { Button } from "@/components/Button";
+import { useEffect, useState } from "react";
+import { Alert, FlatList, Text, View } from "react-native";
+import { Plus } from "lucide-react-native";
+
 import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
-import { TripLinkProps } from "@/components/TripLink";
-import { linksServer } from "@/server/links-server";
+import { Button } from "@/components/Button";
+import { TripLink, TripLinkProps } from "@/components/TripLink";
+
 import { colors } from "@/styles/colors";
-import { Plus } from "lucide-react-native";
-import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
+import { linksServer } from "@/server/links-server";
+import { validateInput } from "@/utils/validateInput";
 
 export function Details({ tripId }: { tripId: string }) {
   const [showNewLinkModal, setShowNewLinkModal] = useState(false);
@@ -27,10 +30,37 @@ export function Details({ tripId }: { tripId: string }) {
     try {
       const links = await linksServer.getLinksByTripId(tripId);
 
-      console.log(links);
       setLinks(links);
     } catch (error) {
       console.log(error);
+    }
+  }
+
+  async function handleCreateTripLink() {
+    try {
+      if (!linkTitle.trim()) {
+        return Alert.alert("Link", "Informe um título para o link.");
+      }
+
+      if (!validateInput.url(linkURL.trim())) {
+        return Alert.alert("Link", "Link inválido!");
+      }
+
+      setIsCreatingLinkTrip(true);
+
+      await linksServer.create({
+        tripId,
+        title: linkTitle,
+        url: linkURL,
+      });
+
+      Alert.alert("Link", "Link criado com sucesso!");
+      resetNewLinkFields();
+      await getTripLinks();
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setIsCreatingLinkTrip(false);
     }
   }
 
@@ -45,6 +75,18 @@ export function Details({ tripId }: { tripId: string }) {
       </Text>
 
       <View className="flex-1">
+        {links.length > 0 ? (
+          <FlatList
+            data={links}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <TripLink data={item} />}
+            contentContainerClassName="gap-4"
+          />
+        ) : (
+          <Text className="text-zinc-400 font-regular text-base mt-2 mb-6">
+            Nenhum link adicionado.
+          </Text>
+        )}
         <Button variant="secondary" onPress={() => setShowNewLinkModal(true)}>
           <Plus color={colors.zinc[200]} size={20} />
           <Button.Title>Cadastrar novo link</Button.Title>
@@ -70,7 +112,7 @@ export function Details({ tripId }: { tripId: string }) {
           </Input>
         </View>
 
-        <Button isLoading={isCreatingLinkTrip} onPress={() => {}}>
+        <Button isLoading={isCreatingLinkTrip} onPress={handleCreateTripLink}>
           <Button.Title>Salvar link</Button.Title>
         </Button>
       </Modal>
