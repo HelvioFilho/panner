@@ -6,16 +6,19 @@ import { Input } from "@/components/Input";
 import { Modal } from "@/components/Modal";
 import { Button } from "@/components/Button";
 import { TripLink, TripLinkProps } from "@/components/TripLink";
+import { Participant, ParticipantProps } from "@/components/Participant";
 
 import { colors } from "@/styles/colors";
 import { linksServer } from "@/server/links-server";
 import { validateInput } from "@/utils/validateInput";
+import { participantsServer } from "@/server/participants-server";
 
 export function Details({ tripId }: { tripId: string }) {
   const [showNewLinkModal, setShowNewLinkModal] = useState(false);
   const [isCreatingLinkTrip, setIsCreatingLinkTrip] = useState(false);
 
   const [links, setLinks] = useState<TripLinkProps[]>([]);
+  const [participants, setParticipants] = useState<ParticipantProps[]>([]);
 
   const [linkTitle, setLinkTitle] = useState("");
   const [linkURL, setLinkURL] = useState("");
@@ -64,13 +67,23 @@ export function Details({ tripId }: { tripId: string }) {
     }
   }
 
+  async function getTripParticipants() {
+    try {
+      const participants = await participantsServer.getByTripId(tripId);
+      setParticipants(participants);
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
   useEffect(() => {
     getTripLinks();
+    getTripParticipants();
   }, []);
 
   return (
     <View className="flex-1 mt-10">
-      <Text className="text-zinc-50 text-2xl font-semibold mb-2">
+      <Text className="text-zinc-50 text-2xl font-semibold mb-2 mt-3">
         Links importantes
       </Text>
 
@@ -80,7 +93,8 @@ export function Details({ tripId }: { tripId: string }) {
             data={links}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => <TripLink data={item} />}
-            contentContainerClassName="gap-4"
+            contentContainerClassName="gap-4 mt-3"
+            showsVerticalScrollIndicator={false}
           />
         ) : (
           <Text className="text-zinc-400 font-regular text-base mt-2 mb-6">
@@ -91,6 +105,18 @@ export function Details({ tripId }: { tripId: string }) {
           <Plus color={colors.zinc[200]} size={20} />
           <Button.Title>Cadastrar novo link</Button.Title>
         </Button>
+      </View>
+      <View className="flex-1 border-t border-zinc-800 mt-6">
+        <Text className="text-zinc-50 text-2xl font-semibold my-6 mt-3 mb-2">
+          Convidados
+        </Text>
+        <FlatList
+          data={participants}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <Participant data={item} />}
+          contentContainerStyle={{ paddingBottom: 170, gap: 15, marginTop: 20 }}
+          showsVerticalScrollIndicator={false}
+        />
       </View>
 
       <Modal
@@ -108,7 +134,11 @@ export function Details({ tripId }: { tripId: string }) {
           </Input>
 
           <Input variant="secondary">
-            <Input.Field placeholder="URL" onChangeText={setLinkURL} />
+            <Input.Field
+              placeholder="URL"
+              autoCapitalize="none"
+              onChangeText={setLinkURL}
+            />
           </Input>
         </View>
 
