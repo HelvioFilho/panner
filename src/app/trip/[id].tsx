@@ -350,6 +350,8 @@ export default function Trip() {
             <Input.Field
               placeholder="E-mail de confirmação"
               onChangeText={setGuestEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
             />
           </Input>
 
