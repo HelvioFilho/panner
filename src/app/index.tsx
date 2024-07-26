@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { router } from "expo-router";
 import { Input } from "@/components/Input";
-import { Alert, Image, Keyboard, Text, View } from "react-native";
+import { Alert, Image, Keyboard, Pressable, Text, View } from "react-native";
 import { DateData } from "react-native-calendars";
 
 import {
@@ -225,27 +225,34 @@ export default function Index() {
                 <Settings2 color={colors.zinc[200]} size={20} />
               </Button>
             </View>
-            <Input>
-              <UserRoundPlus color={colors.zinc[400]} size={20} />
-              <Input.Field
-                placeholder="Quem estará na viagem?"
-                autoCorrect={false}
-                showSoftInputOnFocus={false}
-                value={
+            <Pressable
+              className="flex-row items-center gap-2 pt-4 pb-5"
+              onPress={() => {
+                setShowModal(MODAL.GUESTS);
+              }}
+            >
+              <UserRoundPlus
+                color={
                   emailsToInvite.length > 0
-                    ? `${emailsToInvite.length} ${
-                        emailsToInvite.length > 1
-                          ? "pessoas convidadas"
-                          : "pessoa convidada"
-                      }`
-                    : ""
+                    ? colors.zinc[100]
+                    : colors.zinc[400]
                 }
-                onPress={() => {
-                  Keyboard.dismiss();
-                  setShowModal(MODAL.GUESTS);
-                }}
+                size={20}
               />
-            </Input>
+              <Text
+                className={`${
+                  emailsToInvite.length > 0 ? "text-zinc-100" : "text-zinc-400"
+                } font-regular text-lg pt-1`}
+              >
+                {emailsToInvite.length > 0
+                  ? `${emailsToInvite.length} ${
+                      emailsToInvite.length > 1
+                        ? "pessoas convidadas"
+                        : "pessoa convidada"
+                    }`
+                  : "Quem estará na viagem?"}
+              </Text>
+            </Pressable>
           </>
         )}
 
