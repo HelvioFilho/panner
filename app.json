@@ -5,26 +5,25 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./src/assets/main/icon.png",
-    "scheme": "myapp",
+    "scheme": "planner",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./src/assets/main/splash.png",
-      "resizeMode": "contain",
+      "resizeMode": "cover",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.hsvf.planner"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./src/assets/main/icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.hsvf.planner"
     },
-    "plugins": [
-      "expo-router",
-      "expo-font"
-    ],
+    "plugins": ["expo-router", "expo-font"],
     "experiments": {
       "typedRoutes": true
     }
