@@ -14,7 +14,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.hsvf.planner"
+      "bundleIdentifier": "com.hsvf.planner",
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,7 +26,16 @@
       },
       "package": "com.hsvf.planner"
     },
-    "plugins": ["expo-router", "expo-font"],
+    "plugins": [
+      "expo-router",
+      "expo-font",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Permitir que $(PRODUCT_NAME) acesse seus dados biométricos do Face ID"
+        }
+      ]
+    ],
     "experiments": {
       "typedRoutes": true
     }
