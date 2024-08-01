@@ -1,8 +1,10 @@
 import "@/styles/global.css";
 import "@/utils/dayjsLocaleConfig";
 
-import { Slot } from "expo-router";
+import { useEffect } from "react";
+import { router, Slot } from "expo-router";
 import { StatusBar, View } from "react-native";
+import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 
 import {
   useFonts,
@@ -12,6 +14,26 @@ import {
 } from "@expo-google-fonts/inter";
 
 import { Loading } from "@/components/Loading";
+import { tokenStorage } from "@/storage/token";
+
+const PUBLIC_CLERK_PUBLISHABLE_KEY = process.env
+  .EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY as string;
+
+function InitialLayout() {
+  const { isSignedIn, isLoaded } = useAuth();
+
+  useEffect(() => {
+    if (isLoaded) {
+      if (isSignedIn) {
+        router.replace("/trip");
+      }
+    } else {
+      return;
+    }
+  }, [isSignedIn]);
+
+  return isLoaded ? <Slot /> : <Loading />;
+}
 
 export default function Layout() {
   const [fontsLoaded] = useFonts({
@@ -31,7 +53,12 @@ export default function Layout() {
         backgroundColor="transparent"
         translucent
       />
-      <Slot />
+      <ClerkProvider
+        publishableKey={PUBLIC_CLERK_PUBLISHABLE_KEY}
+        tokenCache={tokenStorage}
+      >
+        <InitialLayout />
+      </ClerkProvider>
     </View>
   );
 }
